@@ -4,6 +4,10 @@ Determine the Palo Alto PAN-OS software version of a remote GlobalProtect portal
 
 Developed with ❤️ by the Bishop Fox [Continuous Attack Surface Testing (CAST)](https://www.bishopfox.com/continuous-attack-surface-testing/how-cast-works/) team.
 
+- [Description](#description)
+- [Getting Started](#getting-started)
+- [Back Matter](#back-matter)
+
 ## Description
 
 Palo Alto's GlobalProtect portal, a feature of PAN-OS, has been the subject of 
