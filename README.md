@@ -23,7 +23,7 @@ Connection: keep-alive
 ETag: "6e185d5daf9a"
 ```
 
-Examing the last 8 characters of the `ETag` gives us the hexadecimal epoch time `5d5daf9a`, represented as `1566420890` in decimal format. We can convert this epoch time to a human-readable format using the UNIX `date` utility:
+Examining the last 8 characters of the `ETag` gives us the hexadecimal epoch time `5d5daf9a`, represented as `1566420890` in decimal format. We can convert this epoch time to a human-readable format using the UNIX `date` utility:
 ```
 $ date -d @1566420890
 Wed 21 Aug 2019 08:54:50 PM UTC
