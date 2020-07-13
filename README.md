@@ -93,6 +93,8 @@ Usage of this tool for testing targets without prior mutual consent is illegal. 
 
 ### See also
 
+- [Shodan Facet Analysis — PAN-OS Version](https://beta.shodan.io/search/facet?query=http.html%3A%22Global+Protect%22&facet=os)
+- [A Look at PAN-OS Versions with a Bit of R](https://rud.is/b/2020/07/10/a-look-at-pan-os-versions-with-a-bit-of-r/)
 - [Palo Alto Networks Security Advisories](https://security.paloaltonetworks.com/)
 
 ### To-do
