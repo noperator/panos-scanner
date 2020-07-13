@@ -37,7 +37,7 @@ $ awk '/Aug.*21.*2019/ {print $1}' version-table.txt
 8.1.10
 ```
 
-This scanner automates the process described above, suggesting an exact (or approximate) underlying PAN-OS version for a remote GlobalProtect portal or management interface.
+This scanner automates the process described above, suggesting an exact (or approximate) underlying PAN-OS version for a remote GlobalProtect portal or management interface. When multiple versions are associated with a given date, this tool will display all version matches as a comma-separated list; e.g, `7.1.24-h1,8.0.19-h1,8.1.9-h4` for `2019-08-15`.
 
 ## Getting started
 
