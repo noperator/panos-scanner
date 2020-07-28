@@ -53,11 +53,12 @@ Note that this script requires `version-table.txt` in the same directory.
 ```
 $ python3 panos-scanner.py -h
 usage: Determine the software version of a remote PAN-OS target. Requires version-table.txt in the same directory.
-       [-h] [-v] -t TARGET
+       [-h] [-v] [-s] -t TARGET
 
 optional arguments:
   -h, --help  show this help message and exit
   -v          verbose output
+  -s          stop after one exact match
   -t TARGET   https://example.com
 ```
 
@@ -71,17 +72,18 @@ Also supports verbose output.
 ```
 $ python3 panos-scanner.py -v -t https://example.com
 [*] https://example.com
-[+] 200 global-protect/login.esp
+[+] global-protect/login.esp
 [*] 2018-05-03 ~ 2018-05-04 => 8.0.10
-[+] 200 global-protect/portal/css/login.css
+[-] php/login.php (ReadTimeout)
+[+] global-protect/portal/css/login.css
 [*] 2018-05-03 ~ 2018-05-04 => 8.0.10
 [*] 2018-05-04 => 8.0.10
-[+] 200 global-protect/portal/images/favicon.ico
+[-] js/Pan.js (HTTPError)
+[+] global-protect/portal/images/favicon.ico
 [*] 2018-05-04 => 8.0.10
-[+] 200 global-protect/portal/images/logo-pan-48525a.svg
+[-] login/images/favicon.ico (HTTPError)
+[+] global-protect/portal/images/logo-pan-48525a.svg
 [*] 2018-05-04 => 8.0.10
-[-] 404 login/images/favicon.ico
-[-] 404 js/Pan.js
 8.0.10 2018-05-04 (exact)
 ```
 
@@ -99,7 +101,7 @@ Usage of this tool for testing targets without prior mutual consent is illegal. 
 
 ### To-do
 
-- [ ] Stop after one exact match
+- [x] Stop after one exact match
 - [x] Simplify output
 - [x] Support verbose CLI option
 
