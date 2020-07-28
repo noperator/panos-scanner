@@ -83,6 +83,27 @@ def check_date(version_table, date):
             matches[key] = {'date': nearby_date, 'versions': versions}
     return matches
 
+def get_matches(date_headers, resp_headers, verbose=False):
+    matches = {}
+    for header in date_headers.keys():
+        if header in resp_headers:
+            date = globals()[date_headers[header]](resp_headers[header])
+            date_matches = check_date(version_table, date)
+            for precision, match in date_matches.items():
+                if match['versions']:
+                    if precision not in matches.keys():
+                        matches[precision] = []
+                    matches[precision].append(match)
+                    if verbose:
+                        print(
+                            '[*]',
+                            '%s ~ %s' % (date, match['date']) if date != match['date'] else date,
+                            '=>',
+                            ','.join(match['versions']),
+                            file=stderr
+                        )
+    return matches
+
 if __name__ == '__main__':
 
     parser = ArgumentParser('Determine the software version of a remote PAN-OS target. Requires version-table.txt in the same directory.')
@@ -136,21 +157,9 @@ if __name__ == '__main__':
 
         # Convert date-related HTTP headers to a standardized format, and
         # store any matching version strings.
-        for header in date_headers.keys():
-            if header in resp_headers:
-                date = globals()[date_headers[header]](resp_headers[header])
-                matches = check_date(version_table, date)
-                for precision, match in matches.items():
-                    if match['versions']:
-                        total_matches[precision].append(match)
-                        if args.verbose:
-                            print(
-                                '[*]',
-                                '%s ~ %s' % (date, match['date']) if date != match['date'] else date,
-                                '=>',
-                                ','.join(match['versions']),
-                                file=stderr
-                            )
+        total_matches.update(get_matches(date_headers, resp_headers, args.verbose))
+        if args.stop and len(total_matches['exact']):
+            break
 
     # Print results.
     printed = []
