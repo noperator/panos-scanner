@@ -172,9 +172,12 @@ if __name__ == '__main__':
             break
 
     # Print results.
-    printed = []
-    for precision, matches in total_matches.items():
-        for match in matches:
-            if match['versions'] and match not in printed:
-                printed.append(match)
-                print(','.join(match['versions']), match['date'], '(%s)' % precision)
+    if not len(sum(total_matches.values(), [])):
+        print('no matching PAN-OS versions found')
+    else:
+        printed = []
+        for precision, matches in total_matches.items():
+            for match in matches:
+                if match['versions'] and match not in printed:
+                    printed.append(match)
+                    print(','.join(match['versions']), match['date'], '(%s)' % precision)
