@@ -52,14 +52,14 @@ def get_resource(target, resources, date_headers, errors, verbose):
             timeout=5,
             verify=False
         )
-        if verbose:
-            sym = '+' if resp.ok else '-'
-            print('[%s]' % sym, resp.status_code, resource, file=stderr)
         resp.raise_for_status()
+        if verbose:
+            print('[+]', resource, file=stderr)
         return {h: resp.headers[h].strip('"') for h in date_headers
                 if h in resp.headers}
     except (HTTPError, ReadTimeout) as e:
-        pass
+        print('[-]', resource, '({})'.format(type(e).__name__), file=stderr)
+        return None
     except errors as e:
         raise e
 
@@ -124,17 +124,26 @@ if __name__ == '__main__':
 
     version_table = load_version_table('version-table.txt')
 
+    # The keys in "date_headers" represent HTTP response headers that we're
+    # looking for. Each of those headers maps to a function in this namespace
+    # that knows how to decode that header value into a datetime.
     date_headers = {
         'ETag':          'etag_to_datetime',
         'Last-Modified': 'last_modified_to_datetime'
     }
 
+    # A match is a dictionary containing a date/version pair. When populated,
+    # each precision key (i.e., "exact" and "approximate") in this
+    # "total_matches" data structure will map to a single list of possibly
+    # several match dictionaries.
     total_matches = {
         'exact': [],
         'approximate': []
     }
 
-    errors = (ConnectTimeout, SSLError, ConnectionError)
+    # These errors are indicative of target-level issues. Don't continue
+    # requesting other resources when encountering these; instead, bail.
+    target_errors = (ConnectTimeout, SSLError, ConnectionError)
 
     if args.verbose:
         print('[*]', args.target, file=stderr)
@@ -146,11 +155,11 @@ if __name__ == '__main__':
                 args.target,
                 resource,
                 date_headers.keys(),
-                errors,
+                target_errors,
                 args.verbose
             )
-        except errors as e:
-            print('[-]', args.target, type(e).__name__, file=stderr)
+        except target_errors as e:
+            print('[-]', args.target,'({})'.format(type(e).__name__), file=stderr)
             exit(1)
         if resp_headers == None:
             continue
