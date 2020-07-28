@@ -49,7 +49,7 @@ def get_resource(target, resources, date_headers, errors, verbose):
         resp = get(
             '%s/%s' % (target, resource),
             headers=headers,
-            timeout=10,
+            timeout=5,
             verify=False
         )
         if verbose:
