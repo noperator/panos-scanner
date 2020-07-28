@@ -24,6 +24,7 @@ ETag: "6e185d5daf9a"
 ```
 
 Examining the last 8 characters of the `ETag` gives us the hexadecimal epoch time `5d5daf9a`, represented as `1566420890` in decimal format. We can convert this epoch time to a human-readable format using the UNIX `date` utility:
+
 ```
 $ date -d @1566420890
 Wed 21 Aug 2019 08:54:50 PM UTC
@@ -50,6 +51,7 @@ $ git clone https://github.com/noperator/panos-scanner.git
 ### Usage
 
 Note that this script requires `version-table.txt` in the same directory.
+
 ```
 $ python3 panos-scanner.py -h
 usage: Determine the software version of a remote PAN-OS target. Requires version-table.txt in the same directory.
@@ -63,12 +65,14 @@ optional arguments:
 ```
 
 In the following example, `https://example.com/global-protect/portal/images/favicon.ico` has an HTTP response header that indicates that it's running PAN-OS version `8.0.10`.
+
 ```
 $ python3 panos-scanner.py -t https://example.com
 8.0.10 2018-05-04 (exact)
 ```
 
 Also supports verbose output.
+
 ```
 $ python3 panos-scanner.py -v -t https://example.com
 [*] https://example.com
@@ -85,6 +89,26 @@ $ python3 panos-scanner.py -v -t https://example.com
 [+] global-protect/portal/images/logo-pan-48525a.svg
 [*] 2018-05-04 => 8.0.10
 8.0.10 2018-05-04 (exact)
+```
+
+This tool doesn't currently support reading from a list of targets. Instead, here's a useful way to test multiple targets using a Bash `for` loop, along with the `tr` and `column` utilities. You can equivalently use a Bash `while` loop over the contents of a text file: `$ cat target_list.txt | while read TARGET; do ...`.
+
+```
+$ for TARGET in \
+https://example.com \
+https://nomatchexample.com \
+https://doublematchexample.com \
+http://nonexistentexample.com \
+; do
+    echo -n "$TARGET;"
+    python3 panos-scanner.py -s -t "$TARGET" | tr '\n' ';'
+    echo
+done | column -t -s ';'
+
+https://example.com             8.1.9 2019-07-03 (exact)
+https://nomatchexample.com      no matches found
+https://doublematchexample.com  8.1.12 2019-12-10 (exact)  9.1.0 2019-12-11 (approximate)
+http://nonexistentexample.com   ConnectionError
 ```
 
 ## Back matter
