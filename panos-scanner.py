@@ -58,7 +58,8 @@ def get_resource(target, resources, date_headers, errors, verbose):
         return {h: resp.headers[h].strip('"') for h in date_headers
                 if h in resp.headers}
     except (HTTPError, ReadTimeout) as e:
-        print('[-]', resource, '({})'.format(type(e).__name__), file=stderr)
+        if verbose:
+            print('[-]', resource, '({})'.format(type(e).__name__), file=stderr)
         return None
     except errors as e:
         raise e
