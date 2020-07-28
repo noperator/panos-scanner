@@ -160,7 +160,7 @@ if __name__ == '__main__':
                 args.verbose
             )
         except target_errors as e:
-            print('[-]', args.target,'({})'.format(type(e).__name__), file=stderr)
+            print(type(e).__name__, file=stderr)
             exit(1)
         if resp_headers == None:
             continue
@@ -173,7 +173,7 @@ if __name__ == '__main__':
 
     # Print results.
     if not len(sum(total_matches.values(), [])):
-        print('no matching PAN-OS versions found')
+        print('no matches found')
     else:
         printed = []
         for precision, matches in total_matches.items():
