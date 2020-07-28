@@ -6,8 +6,13 @@ https://www.bishopfox.com/continuous-attack-surface-testing/how-cast-works/
 
 Author:     @noperator
 Purpose:    Determine the software version of a remote PAN-OS target.
-Notes:      Requires version-table.txt in the same directory.
-Usage:      panos-scanner.py [-h] [-v] -t TARGET
+Notes:      - Requires version-table.txt in the same directory.
+            - Usage of this tool for attacking targets without prior mutual
+              consent is illegal. It is the end user's responsibility to obey
+              all applicable local, state, and federal laws. Developers assume
+              no liability and are not responsible for any misuse or damage
+              caused by this program.
+Usage:      python3 panos-scanner.py [-h] [-v] [-s] -t TARGET
 '''
 
 from argparse import ArgumentParser
@@ -82,6 +87,7 @@ if __name__ == '__main__':
 
     parser = ArgumentParser('Determine the software version of a remote PAN-OS target. Requires version-table.txt in the same directory.')
     parser.add_argument('-v', dest='verbose', action='store_true', help='verbose output')
+    parser.add_argument('-s', dest='stop', action='store_true', help='stop after one exact match')
     parser.add_argument('-t', dest='target', required=True, help='https://example.com')
     args = parser.parse_args()
 
