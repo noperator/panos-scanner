@@ -93,12 +93,12 @@ if __name__ == '__main__':
 
     static_resources = [
         'global-protect/login.esp',
-        'global-protect/portal/css/login.css',
-        'global-protect/portal/images/favicon.ico',
-        'global-protect/portal/images/logo-pan-48525a.svg',
         'php/login.php',
-        'login/images/favicon.ico',
+        'global-protect/portal/css/login.css',
         'js/Pan.js',
+        'global-protect/portal/images/favicon.ico',
+        'login/images/favicon.ico',
+        'global-protect/portal/images/logo-pan-48525a.svg',
     ]
 
     version_table = load_version_table('version-table.txt')
