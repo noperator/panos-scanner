@@ -117,6 +117,10 @@ http://nonexistentexample.com   ConnectionError
 
 Usage of this tool for testing targets without prior mutual consent is illegal. It is the end user's responsibility to obey all applicable local, state, and federal laws. Developers assume no liability and are not responsible for any misuse or damage caused by this program.
 
+### Acknowledgements
+
+Thanks [@k4nfr3](https://github.com/k4nfr3) for providing updates to the version table.
+
 ### See also
 
 - [Shodan Facet Analysis — PAN-OS Version](https://beta.shodan.io/search/facet?query=http.html%3A%22Global+Protect%22&facet=os)
