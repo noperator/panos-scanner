@@ -132,6 +132,7 @@ Thanks [@k4nfr3](https://github.com/k4nfr3) for providing updates to the version
 - [x] Stop after one exact match
 - [x] Simplify output
 - [x] Support verbose CLI option
+- [ ] Perhaps output JSON instead, to be processed with `jq`
 
 ### License
 
