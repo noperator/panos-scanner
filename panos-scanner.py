@@ -25,6 +25,13 @@ from urllib3.exceptions import InsecureRequestWarning
 
 disable_warnings(InsecureRequestWarning)
 
+def panoscve(version):
+    base_url="https://security.paloaltonetworks.com/?product=PAN-OS&version=PAN-OS+"
+    array_version=version.split('.')
+    main_version=array_version[0]+"."+array_version[1]
+    return base_url+main_version
+
+
 def etag_to_datetime(etag):
     epoch_hex = etag[-8:]
     return datetime.fromtimestamp(
@@ -84,18 +91,19 @@ def check_date(version_table, date):
             matches[key] = {'date': nearby_date, 'versions': versions}
     return matches
 
-def get_matches(date_headers, resp_headers, verbose=False):
+def get_matches(date_headers, resp_headers, verbose):
     matches = {}
     for header in date_headers.keys():
         if header in resp_headers:
             date = globals()[date_headers[header]](resp_headers[header])
+            if verbose: print("date received = " + str(date))
             date_matches = check_date(version_table, date)
             for precision, match in date_matches.items():
                 if match['versions']:
                     if precision not in matches.keys():
                         matches[precision] = []
                     matches[precision].append(match)
-                    if verbose:
+            if verbose:
                         print(
                             '[*]',
                             '%s ~ %s' % (date, match['date']) if date != match['date'] else date,
@@ -110,6 +118,7 @@ if __name__ == '__main__':
     parser = ArgumentParser('Determine the software version of a remote PAN-OS target. Requires version-table.txt in the same directory.')
     parser.add_argument('-v', dest='verbose', action='store_true', help='verbose output')
     parser.add_argument('-s', dest='stop', action='store_true', help='stop after one exact match')
+    parser.add_argument('-c', dest='cve', action='store_true', help='show PAN CVE URL')
     parser.add_argument('-t', dest='target', required=True, help='https://example.com')
     args = parser.parse_args()
 
@@ -148,6 +157,7 @@ if __name__ == '__main__':
 
     if args.verbose:
         print('[*]', args.target, file=stderr)
+        verbose=True
 
     # Check for the presence of each static resource.
     for resource in static_resources:
@@ -181,3 +191,5 @@ if __name__ == '__main__':
                 if match['versions'] and match not in printed:
                     printed.append(match)
                     print(','.join(match['versions']), match['date'], '(%s)' % precision)
+                    if args.cve:
+                       print(panoscve(','.join(match['versions'])))
