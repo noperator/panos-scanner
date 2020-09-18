@@ -55,12 +55,13 @@ Note that this script requires `version-table.txt` in the same directory.
 ```
 $ python3 panos-scanner.py -h
 usage: Determine the software version of a remote PAN-OS target. Requires version-table.txt in the same directory.
-       [-h] [-v] [-s] -t TARGET
+       [-h] [-v] [-s] [-c] -t TARGET
 
 optional arguments:
   -h, --help  show this help message and exit
   -v          verbose output
   -s          stop after one exact match
+  -c          link to PAN-OS CVE URL for matching versions
   -t TARGET   https://example.com
 ```
 
@@ -68,6 +69,15 @@ In the following example, `https://example.com/global-protect/portal/images/favi
 
 ```
 $ python3 panos-scanner.py -t https://example.com
+8.0.10 2018-05-04 (exact)
+```
+
+The tool can conveniently print a URL taking you to a list of Palo Alto's security advisories filtered on the matching PAN-OS version.
+
+```
+$ python3 panos-scanner.py -c -t https://example.com
+[*] CVEs for PAN-OS v8.0:
+[*] https://security.paloaltonetworks.com/?product=PAN-OS&version=PAN-OS+8.0
 8.0.10 2018-05-04 (exact)
 ```
 
@@ -119,7 +129,7 @@ Usage of this tool for testing targets without prior mutual consent is illegal. 
 
 ### Acknowledgements
 
-Thanks [@k4nfr3](https://github.com/k4nfr3) for providing updates to the version table.
+Thanks [@k4nfr3](https://github.com/k4nfr3) for providing updates to the version table, and for building in the option to print a URL for Palo Alto's security advisories page.
 
 ### See also
 
