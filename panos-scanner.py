@@ -25,6 +25,8 @@ from urllib3.exceptions import InsecureRequestWarning
 
 disable_warnings(InsecureRequestWarning)
 
+verbose = False
+
 def etag_to_datetime(etag):
     epoch_hex = etag[-8:]
     return datetime.fromtimestamp(
@@ -37,7 +39,7 @@ def last_modified_to_datetime(last_modified):
                '%a, %d %b %Y %X'
            ).date()
 
-def get_resource(target, resources, date_headers, errors, verbose):
+def get_resource(target, resource, date_headers, errors):
     try:
         headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:54.0) Gecko/20100101 Firefox/54.0',
@@ -84,7 +86,7 @@ def check_date(version_table, date):
             matches[key] = {'date': nearby_date, 'versions': versions}
     return matches
 
-def get_matches(date_headers, resp_headers, verbose=False):
+def get_matches(date_headers, resp_headers, version_table):
     matches = {}
     for header in date_headers.keys():
         if header in resp_headers:
@@ -105,11 +107,12 @@ def get_matches(date_headers, resp_headers, verbose=False):
                         )
     return matches
 
-if __name__ == '__main__':
+def main():
 
     parser = ArgumentParser('Determine the software version of a remote PAN-OS target. Requires version-table.txt in the same directory.')
     parser.add_argument('-v', dest='verbose', action='store_true', help='verbose output')
     parser.add_argument('-s', dest='stop', action='store_true', help='stop after one exact match')
+    parser.add_argument('-c', dest='link_cve_url', action='store_true', help='link to PAN-OS CVE URL for discovered versions')
     parser.add_argument('-t', dest='target', required=True, help='https://example.com')
     args = parser.parse_args()
 
@@ -148,6 +151,8 @@ if __name__ == '__main__':
 
     if args.verbose:
         print('[*]', args.target, file=stderr)
+        global verbose
+        verbose = True
 
     # Check for the presence of each static resource.
     for resource in static_resources:
@@ -157,7 +162,6 @@ if __name__ == '__main__':
                 resource,
                 date_headers.keys(),
                 target_errors,
-                args.verbose
             )
         except target_errors as e:
             print(type(e).__name__, file=stderr)
@@ -167,7 +171,7 @@ if __name__ == '__main__':
 
         # Convert date-related HTTP headers to a standardized format, and
         # store any matching version strings.
-        total_matches.update(get_matches(date_headers, resp_headers, args.verbose))
+        total_matches.update(get_matches(date_headers, resp_headers, version_table))
         if args.stop and len(total_matches['exact']):
             break
 
@@ -180,4 +184,12 @@ if __name__ == '__main__':
             for match in matches:
                 if match['versions'] and match not in printed:
                     printed.append(match)
+                    if args.link_cve_url:
+                        cve_url = 'https://security.paloaltonetworks.com/?product=PAN-OS&version=PAN-OS+'
+                        for version in match['versions']:
+                            major, minor = version.split('.')[:2]
+                            print('[*]', 'CVEs for PAN-OS v{}.{}:\n[*] {}{}.{}'.format(major, minor, cve_url, major, minor))
                     print(','.join(match['versions']), match['date'], '(%s)' % precision)
+
+if __name__ == '__main__':
+    main()
