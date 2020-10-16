@@ -3,7 +3,6 @@
 '''
 Developed with <3 by the Bishop Fox Continuous Attack Surface Testing (CAST) team.
 https://www.bishopfox.com/continuous-attack-surface-testing/how-cast-works/
-
 Author:     @noperator
 Purpose:    Determine the software version of a remote PAN-OS target.
 Notes:      - Requires version-table.txt in the same directory.
@@ -24,6 +23,9 @@ from urllib3 import disable_warnings
 from urllib3.exceptions import InsecureRequestWarning
 
 disable_warnings(InsecureRequestWarning)
+def panoscve(version):
+    base_url="https://security.paloaltonetworks.com/?product=PAN-OS&version=PAN-OS+"
+    return base_url+version
 
 def etag_to_datetime(etag):
     epoch_hex = etag[-8:]
@@ -111,6 +113,7 @@ if __name__ == '__main__':
     parser.add_argument('-v', dest='verbose', action='store_true', help='verbose output')
     parser.add_argument('-s', dest='stop', action='store_true', help='stop after one exact match')
     parser.add_argument('-t', dest='target', required=True, help='https://example.com')
+    parser.add_argument('-c', dest='cve', action='store_true', help='show PAN CVE URL')
     args = parser.parse_args()
 
     static_resources = [
@@ -181,3 +184,5 @@ if __name__ == '__main__':
                 if match['versions'] and match not in printed:
                     printed.append(match)
                     print(','.join(match['versions']), match['date'], '(%s)' % precision)
+                    if args.cve:
+                       print(panoscve(','.join(match['versions'])))
