@@ -1,3 +1,5 @@
+ℹ️ Note: With PAN-OS v10.0.4, it appears that Palo Alto has stopped providing the `ETag` response header for various web resources, which effectively disables this fingerprinting method.
+
 # PAN-OS GlobalProtect Portal Scanner
 
 Determine the Palo Alto PAN-OS software version of a remote GlobalProtect portal or management interface.
