@@ -145,6 +145,7 @@ Thanks [@k4nfr3](https://github.com/k4nfr3) for providing updates to the version
 - [x] Simplify output
 - [x] Support verbose CLI option
 - [x] Perhaps output JSON instead, to be processed with `jq`
+- [ ] Gracefully handle SSL errors
 
 ### License
 
