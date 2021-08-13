@@ -17,15 +17,27 @@ Usage:      python3 panos-scanner.py [-h] [-v] [-s] -t TARGET
 
 import argparse
 import datetime
+import json
+import logging
 import requests
 import requests.exceptions
 import sys
+import time
 import urllib3
 import urllib3.exceptions
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 verbose = False
+
+# Set up logging.
+logging.basicConfig(
+    format="%(asctime)s %(levelname)-8s [%(funcName)s] %(message)s",
+    datefmt="%Y-%m-%dT%H:%M:%SZ",
+)
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+logging.Formatter.converter = time.gmtime
 
 
 def etag_to_datetime(etag):
@@ -38,26 +50,24 @@ def last_modified_to_datetime(last_modified):
 
 
 def get_resource(target, resource, date_headers, errors):
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:54.0) Gecko/20100101 Firefox/54.0",
+        "Connection": "close",
+        "Accept-Language": "en-US,en;q=0.5",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Upgrade-Insecure-Requests": "1",
+    }
+    logger.debug(resource)
     try:
-        headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:54.0) Gecko/20100101 Firefox/54.0",
-            "Connection": "close",
-            "Accept-Language": "en-US,en;q=0.5",
-            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-            "Upgrade-Insecure-Requests": "1",
-        }
         resp = requests.get(
             "%s/%s" % (target, resource), headers=headers, timeout=5, verify=False
         )
         resp.raise_for_status()
-        if verbose:
-            print("[+]", resource, file=sys.stderr)
         return {
             h: resp.headers[h].strip('"') for h in date_headers if h in resp.headers
         }
     except (requests.exceptions.HTTPError, requests.exceptions.ReadTimeout) as e:
-        if verbose:
-            print("[-]", resource, "({})".format(type(e).__name__), file=sys.stderr)
+        logger.warning(type(e).__name__)
         return None
     except errors as e:
         raise e
@@ -99,23 +109,28 @@ def get_matches(date_headers, resp_headers, version_table):
                     if precision not in matches.keys():
                         matches[precision] = []
                     matches[precision].append(match)
-                    if verbose:
-                        print(
-                            "[*]",
-                            "%s ~ %s" % (date, match["date"])
-                            if date != match["date"]
-                            else date,
-                            "=>",
-                            ",".join(match["versions"]),
-                            file=sys.stderr,
-                        )
+                    if date != match["date"]:
+                        date_str = f"{date} ~ {match['date']}"
+                    else:
+                        date_str = date
+                    logger.debug(
+                        f"date {date_str} matches version(s) {','.join(match['versions'])}"
+                    )
     return matches
 
 
 def main():
 
+    # Parse arguments.
     parser = argparse.ArgumentParser(
-        "Determine the software version of a remote PAN-OS target. Requires version-table.txt in the same directory."
+        """
+        Determine the software version of a remote PAN-OS target. Requires
+        version-table.txt in the same directory. Usage of this tool for
+        attacking targets without prior mutual consent is illegal. It is the
+        end user's responsibility to obey all applicable local, state, and
+        federal laws. Developers assume no liability and are not responsible
+        for any misuse or damage caused by this program.
+        """
     )
     parser.add_argument(
         "-v", dest="verbose", action="store_true", help="verbose output"
@@ -167,9 +182,8 @@ def main():
     )
 
     if args.verbose:
-        print("[*]", args.target, file=sys.stderr)
-        global verbose
-        verbose = True
+        logger.setLevel(logging.DEBUG)
+        logger.debug(f"scanning target: {args.target}")
 
     # Check for the presence of each static resource.
     for resource in static_resources:
@@ -181,7 +195,7 @@ def main():
                 target_errors,
             )
         except target_errors as e:
-            print(type(e).__name__, file=sys.stderr)
+            logger.error(f"could not connect to target: {type(e).__name__}")
             sys.exit(1)
         if resp_headers == None:
             continue
@@ -194,7 +208,7 @@ def main():
 
     # Print results.
     if not len(sum(total_matches.values(), [])):
-        print("no matches found")
+        logger.info("no matching versions found")
     else:
         printed = []
         for precision, matches in total_matches.items():
@@ -205,15 +219,16 @@ def main():
                         cve_url = "https://security.paloaltonetworks.com/?product=PAN-OS&version=PAN-OS+"
                         for version in match["versions"]:
                             major, minor = version.split(".")[:2]
-                            print(
-                                "[*]",
-                                "CVEs for PAN-OS v{}.{}:\n[*] {}{}.{}".format(
+                            logger.info(
+                                "CVEs for PAN-OS v{}.{}: {}{}.{}".format(
                                     major, minor, cve_url, major, minor
                                 ),
                             )
-                    print(
-                        ",".join(match["versions"]), match["date"], "(%s)" % precision
+                    logger.info(
+                        f"{precision} match: versions(s) {','.join(match['versions'])} for date {match['date']}"
                     )
+
+    print(json.dumps(total_matches, default=str))
 
 
 if __name__ == "__main__":
