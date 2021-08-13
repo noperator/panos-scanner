@@ -15,32 +15,26 @@ Notes:      - Requires version-table.txt in the same directory.
 Usage:      python3 panos-scanner.py [-h] [-v] [-s] -t TARGET
 """
 
-from argparse import ArgumentParser
-from datetime import datetime, timedelta
-from requests import get
-from requests.exceptions import (
-    HTTPError,
-    ConnectTimeout,
-    SSLError,
-    ConnectionError,
-    ReadTimeout,
-)
-from sys import argv, stderr, exit
-from urllib3 import disable_warnings
-from urllib3.exceptions import InsecureRequestWarning
+import argparse
+import datetime
+import requests
+import requests.exceptions
+import sys
+import urllib3
+import urllib3.exceptions
 
-disable_warnings(InsecureRequestWarning)
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 verbose = False
 
 
 def etag_to_datetime(etag):
     epoch_hex = etag[-8:]
-    return datetime.fromtimestamp(int(epoch_hex, 16)).date()
+    return datetime.datetime.fromtimestamp(int(epoch_hex, 16)).date()
 
 
 def last_modified_to_datetime(last_modified):
-    return datetime.strptime(last_modified[:-4], "%a, %d %b %Y %X").date()
+    return datetime.datetime.strptime(last_modified[:-4], "%a, %d %b %Y %X").date()
 
 
 def get_resource(target, resource, date_headers, errors):
@@ -52,18 +46,18 @@ def get_resource(target, resource, date_headers, errors):
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
             "Upgrade-Insecure-Requests": "1",
         }
-        resp = get(
+        resp = requests.get(
             "%s/%s" % (target, resource), headers=headers, timeout=5, verify=False
         )
         resp.raise_for_status()
         if verbose:
-            print("[+]", resource, file=stderr)
+            print("[+]", resource, file=sys.stderr)
         return {
             h: resp.headers[h].strip('"') for h in date_headers if h in resp.headers
         }
-    except (HTTPError, ReadTimeout) as e:
+    except (requests.exceptions.HTTPError, requests.exceptions.ReadTimeout) as e:
         if verbose:
-            print("[-]", resource, "({})".format(type(e).__name__), file=stderr)
+            print("[-]", resource, "({})".format(type(e).__name__), file=sys.stderr)
         return None
     except errors as e:
         raise e
@@ -73,14 +67,15 @@ def load_version_table(version_table):
     with open(version_table, "r") as f:
         entries = [line.strip().split() for line in f.readlines()]
     return {
-        e[0]: datetime.strptime(" ".join(e[1:]), "%b %d %Y").date() for e in entries
+        e[0]: datetime.datetime.strptime(" ".join(e[1:]), "%b %d %Y").date()
+        for e in entries
     }
 
 
 def check_date(version_table, date):
     matches = {}
     for n in [0, 1, -1, 2, -2]:
-        nearby_date = date + timedelta(n)
+        nearby_date = date + datetime.timedelta(n)
         versions = [
             version for version, date in version_table.items() if date == nearby_date
         ]
@@ -112,14 +107,14 @@ def get_matches(date_headers, resp_headers, version_table):
                             else date,
                             "=>",
                             ",".join(match["versions"]),
-                            file=stderr,
+                            file=sys.stderr,
                         )
     return matches
 
 
 def main():
 
-    parser = ArgumentParser(
+    parser = argparse.ArgumentParser(
         "Determine the software version of a remote PAN-OS target. Requires version-table.txt in the same directory."
     )
     parser.add_argument(
@@ -165,10 +160,14 @@ def main():
 
     # These errors are indicative of target-level issues. Don't continue
     # requesting other resources when encountering these; instead, bail.
-    target_errors = (ConnectTimeout, SSLError, ConnectionError)
+    target_errors = (
+        requests.exceptions.ConnectTimeout,
+        requests.exceptions.SSLError,
+        requests.exceptions.ConnectionError,
+    )
 
     if args.verbose:
-        print("[*]", args.target, file=stderr)
+        print("[*]", args.target, file=sys.stderr)
         global verbose
         verbose = True
 
@@ -182,8 +181,8 @@ def main():
                 target_errors,
             )
         except target_errors as e:
-            print(type(e).__name__, file=stderr)
-            exit(1)
+            print(type(e).__name__, file=sys.stderr)
+            sys.exit(1)
         if resp_headers == None:
             continue
 
