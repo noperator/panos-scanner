@@ -2,7 +2,7 @@
 
 Determine the Palo Alto PAN-OS software version of a remote GlobalProtect portal or management interface.
 
-Developed with ❤️ by the Bishop Fox [Cosmos (formerly CAST)](https://bishopfox.com/platform) team.
+Developed with ❤️ by the [Bishop Fox Cosmos](https://bishopfox.com/platform) (formerly CAST) team.
 
 - [Description](#description)
 - [Getting started](#getting-started)
